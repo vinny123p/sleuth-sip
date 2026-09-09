@@ -46,7 +46,8 @@ h1.b-title { font-family: var(--font-display); font-size: 2rem; letter-spacing: 
 .btn.subtle { background: transparent; border-style: dashed; font-size: .9rem; color: var(--dim); width: auto; padding: 8px 14px; }
 .btn:focus-visible, .tin:focus-visible { outline: 3px solid var(--gold-soft); outline-offset: 2px; }
 .b-typed-row { display: flex; gap: 8px; }
-.b-typed-row .btn { width: auto; margin: 0; padding: 12px 18px; }
+.b-typed-row .tin { min-width: 0; }
+.b-typed-row .btn { width: auto; margin: 0; padding: 12px 18px; flex: none; }
 .tin { flex: 1; padding: 12px; font-size: 1.05rem; background: #fffdf8; border: 2px solid var(--line); color: var(--fg); border-radius: 10px; font-family: var(--font-body); font-weight: 500; }
 .tin:focus { border-color: var(--gold); outline: none; }
 .b-err { color: var(--bad); margin-top: 8px; min-height: 1.2em; }
@@ -120,3 +121,17 @@ h1.b-title { font-family: var(--font-display); font-size: 2rem; letter-spacing: 
 .b-tally-barwrap { flex: 1; background: #e9dfc8; border: 1px solid var(--line); border-radius: 9px; height: 18px; overflow: hidden; }
 .b-tally-bar { background: linear-gradient(180deg, #12a89d, var(--teal)); height: 100%; border-radius: 8px; transition: width .5s; }
 .b-tally-n { width: 30px; text-align: right; font-weight: 600; }
+/* mobile */
+@media (max-width: 520px) {
+  .landing { padding-top: 6vh; }
+  .landing h1 { font-size: 2.05rem; }
+  .sunburst { width: 220px; height: 220px; margin-bottom: -150px; }
+  .joinlabel { font-size: .95rem; }
+  .codein { font-size: 1.4rem !important; }
+  .b-codewrap { margin-left: 6px; margin-right: 6px; }
+  .b-code { font-size: 2.5rem; }
+  .b-qr img { width: 180px; height: 180px; }
+  .hud { font-size: .72rem; padding: 8px 12px; flex-wrap: wrap; gap: 4px; }
+  .call-row .btn { width: 128px; }
+  .b-tally-label { width: 70px; }
+}
