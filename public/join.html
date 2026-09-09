@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sleuth &amp; Sip — Join</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap" style="max-width:480px;">
+  <div id="app"><p class="b-status">Connecting…</p></div>
+</div>
+<script src="/app.js"></script>
+<script>
+const { $, api, codeFromPath } = window.UNKNOWN;
+const code = codeFromPath('j');
+const app = $('#app');
+(async () => {
+  if (!code) { app.innerHTML = '<p>Invalid join link.</p>'; return; }
+  let info;
+  try { info = await api('/api/room/' + code); }
+  catch (e) { app.innerHTML = '<p>Room not found. Check the code on the shared screen.</p>'; return; }
+  app.innerHTML = '';
+  const h = document.createElement('h1'); h.className = 'b-title'; h.textContent = 'Sleuth & Sip'; app.appendChild(h);
+  const p = document.createElement('p'); p.className = 'b-text';
+  if (info.mode === 'ensemble') {
+    p.textContent = `Room ${code} · ENSEMBLE · ${info.players} player(s) joined. Pick your team:`;
+  } else {
+    p.textContent = `Room ${code} · ${info.players} receiver(s) joined.`;
+  }
+  app.appendChild(p);
+  let teamId = null;
+  if (info.mode === 'ensemble' && info.teams) {
+    const twrap = document.createElement('div'); twrap.className = 'b-teams';
+    info.teams.forEach((tm, i) => {
+      const b = document.createElement('button');
+      b.className = 'btn choice teamjoin' + (i === 0 ? ' sel' : '');
+      b.innerHTML = '';
+      const dot = document.createElement('span'); dot.className = 'b-dot'; dot.style.background = tm.color;
+      b.appendChild(dot);
+      const nm = document.createElement('span'); nm.textContent = ` Team ${tm.name} (${tm.players})`;
+      b.appendChild(nm);
+      b.onclick = () => {
+        teamId = tm.id;
+        twrap.querySelectorAll('.teamjoin').forEach((x) => x.classList.remove('sel'));
+        b.classList.add('sel');
+      };
+      twrap.appendChild(b);
+    });
+    teamId = info.teams[0].id;
+    app.appendChild(twrap);
+  }
+  const label = document.createElement('div'); label.className = 'b-prompt'; label.textContent = 'Your name'; app.appendChild(label);
+  const row = document.createElement('div'); row.className = 'b-typed-row';
+  const inp = document.createElement('input'); inp.className = 'tin'; inp.placeholder = 'e.g. Vincent'; inp.autocomplete = 'off';
+  const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = info.mode === 'ensemble' ? 'Join team' : 'Join as receiver';
+  const err = document.createElement('div'); err.className = 'b-err';
+  const join = async () => {
+    btn.disabled = true; err.textContent = '';
+    try {
+      const r = await api(`/api/room/${code}/join`, { name: inp.value.trim() || 'Player', teamId });
+      localStorage.setItem('unknown-' + code, r.playerId);
+      location.href = `/p/${code}?p=${r.playerId}`;
+    } catch (e) { err.textContent = e.message; btn.disabled = false; }
+  };
+  btn.onclick = join; inp.onkeydown = (e) => { if (e.key === 'Enter') join(); };
+  row.appendChild(inp); row.appendChild(btn);
+  app.appendChild(row); app.appendChild(err);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sleuth &amp; Sip — Physical kit</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap noprint">
+  <h1 class="b-title">Physical kit</h1>
+  <p class="b-text">Six pages: preparation, packets A and B, evidence 01 and 02, and the sealed packet 000. Print this page, cut or fold into envelopes.</p>
+  <button class="btn primary" onclick="window.print()">Print kit</button>
+</div>
+<div id="kit"></div>
+<script src="/app.js"></script>
+<script>
+const { $, api } = window.UNKNOWN;
+const mode = new URLSearchParams(location.search).get('mode') === 'ensemble' ? 'ensemble' : 'duet';
+(async () => {
+  const { pages } = await api('/api/kit?mode=' + mode);
+  document.querySelector('.b-text').textContent = mode === 'ensemble'
+    ? 'Eight pages: preparation, six team dossiers, and the sealed packet 000. Print this page, cut or fold into envelopes.'
+    : 'Six pages: preparation, packets A and B, evidence 01 and 02, and the sealed packet 000. Print this page, cut or fold into envelopes.';
+  const kit = $('#kit');
+  pages.forEach(pg => {
+    const d = document.createElement('div'); d.className = 'kitpage';
+    const h = document.createElement('h2'); h.textContent = pg.title; d.appendChild(h);
+    const b = document.createElement('p'); b.textContent = pg.body; d.appendChild(b);
+    kit.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

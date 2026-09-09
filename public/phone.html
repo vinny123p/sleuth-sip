@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sleuth &amp; Sip — Receiver</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="hud"><span id="hud-l">Sleuth &amp; Sip</span><span id="hud-r"></span></div>
+<div class="wrap"><div id="app"><p class="b-status">Connecting…</p></div></div>
+<script src="/app.js"></script>
+<script>
+const { $, api, codeFromPath, qs, renderBlocks, armTimers, stopRing } = window.UNKNOWN;
+const code = codeFromPath('p');
+const playerId = qs.get('p') || localStorage.getItem('unknown-' + code);
+if (!code) $('#app').innerHTML = '<p>Missing room.</p>';
+if (!playerId) location.href = '/j/' + code;
+
+async function act(kind, value, btn) {
+  const body = kind === 'call'
+    ? { playerId, kind: value === '__answer' ? 'answer-call' : 'decline-call' }
+    : { playerId, kind, value };
+  try { await api(`/api/room/${code}/action`, body); await poll(true); }
+  catch (e) { if (btn) btn.disabled = false; throw e; }
+}
+async function hostGo(id, btn) {
+  // phone-side go buttons: off-record request + opening the letter
+  if (id === 'offrecord-request' || id === 'open-letter') {
+    btn.disabled = true;
+    await act(id);
+  }
+}
+
+let lastV = -1;
+async function poll() {
+  try {
+    const s = await api(`/api/room/${code}/state?playerId=${playerId}`);
+    if (s.v !== lastV) {
+      lastV = s.v;
+      const who = s.team ? `TEAM ${s.team.name}` : `RECEIVER ${s.receiver}`;
+      $('#hud-l').textContent = `${who} · ${s.scene.part}`;
+      $('#hud-r').innerHTML = `clearance <b>${s.clearance.level}</b> (${s.clearance.score})`;
+      document.title = `Sleuth & Sip — ${who}`;
+      renderBlocks($('#app'), s.blocks, { act, hostGo });
+      armTimers(s);
+      window.scrollTo(0, 0);
+    }
+  } catch (e) {
+    if (/unknown player|room not found/.test(e.message)) {
+      stopRing();
+      localStorage.removeItem('unknown-' + code);
+      location.href = '/j/' + code;
+    }
+  }
+}
+setInterval(poll, 1500);
+poll();
+</script>
+</body>
+</html>

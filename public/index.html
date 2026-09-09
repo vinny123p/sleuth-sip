@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sleuth &amp; Sip</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap landing">
+  <h1>Sleuth &amp; Sip</h1>
+  <p>The Room That Remembers</p>
+  <div class="mt joinbox">
+    <p class="joinlabel">Have a room code? Enter it:</p>
+    <div class="b-typed-row" style="max-width:340px;margin:0 auto;">
+      <input class="tin codein" id="codeIn" placeholder="ABCD" autocomplete="off" maxlength="4" style="text-transform:uppercase">
+      <button class="btn primary" id="joinBtn">Join</button>
+    </div>
+  </div>
+  <div class="mt">
+    <p class="dim">Hosting a game?</p>
+    <button class="btn" id="hostBtn">Host a room — duet (2 players)</button>
+  </div>
+  <div class="mt">
+    <button class="btn" id="hostEnsBtn">Host an ensemble room — up to 24 players</button>
+  </div>
+  <p class="dim" style="margin-top:2em">A playable social mystery. Two phones and one shared screen,<br>or up to 24 players in teams trading clues toward one solve.</p>
+  <div class="mt">
+    <p><a href="/kit.html" style="color:var(--dim)">Print the duet kit</a> · <a href="/kit.html?mode=ensemble" style="color:var(--dim)">Print the ensemble kit</a></p>
+  </div>
+</div>
+<script src="/app.js"></script>
+<script>
+const { api } = window.UNKNOWN;
+const hostRoom = async (btn, body) => {
+  btn.disabled = true;
+  try { const r = await api('/api/room', body); location.href = r.hostUrl; }
+  catch (err) { btn.disabled = false; alert(err.message); }
+};
+document.getElementById('hostBtn').onclick = (e) => hostRoom(e.target, {});
+document.getElementById('hostEnsBtn').onclick = (e) => hostRoom(e.target, { mode: 'ensemble', teamCount: 6 });
+const go = () => {
+  const c = document.getElementById('codeIn').value.trim().toUpperCase();
+  if (c) location.href = '/j/' + c;
+};
+document.getElementById('joinBtn').onclick = go;
+document.getElementById('codeIn').onkeydown = (e) => { if (e.key === 'Enter') go(); };
+</script>
+</body>
+</html>

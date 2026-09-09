@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sleuth &amp; Sip — Shared screen</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="host">
+<div class="hud"><span id="hud-l">Sleuth &amp; Sip · shared screen</span><span id="hud-r"></span></div>
+<div class="wrap"><div id="app"><p class="b-status">Connecting…</p></div></div>
+<div class="testpanel" id="testpanel" style="display:none;">
+  <h3>TEST MODE</h3>
+  <select id="tNode"></select>
+  <button id="tJump">Jump to node</button>
+  <button id="tTimeout">Trigger timeout</button>
+  <select id="tEnding">
+    <option>RETURN</option><option>ARCHIVE</option><option>SILENCE</option>
+    <option>OPEN DOOR</option><option>LOOP</option>
+  </select>
+  <button id="tPreview">Preview ending</button>
+  <button id="tInspect">Inspect state</button>
+  <button id="tPause">Pause / resume</button>
+  <button id="tImpA">Impersonate A</button>
+  <button id="tImpB">Impersonate B</button>
+  <button id="tReset">Reset room</button>
+  <pre id="tOut" style="display:none;"></pre>
+</div>
+<script src="/app.js"></script>
+<script>
+const { $, api, codeFromPath, qs, renderBlocks, armTimers } = window.UNKNOWN;
+const code = codeFromPath('h');
+const test = qs.get('test') === '1';
+if (!code) $('#app').innerHTML = '<p>Missing room.</p>';
+
+async function act() {}
+async function hostGo(id, btn) {
+  try {
+    if (id === 'start') await api(`/api/room/${code}/host`, { cmd: 'start' });
+    else await api(`/api/room/${code}/host`, { cmd: 'go', kind: id });
+    await poll();
+  } catch (e) { if (btn) btn.disabled = false; }
+}
+const thost = (body) => api(`/api/room/${code}/host`, { test: true, ...body });
+
+let lastV = -1, paused = false;
+async function poll() {
+  try {
+    const s = await api(`/api/room/${code}/state?host=1&test=${test ? 1 : 0}`);
+    if (s.v !== lastV) {
+      lastV = s.v; paused = s.status === 'paused';
+      $('#hud-l').textContent = `Sleuth & Sip · ${s.scene.part} · room ${s.code}${s.mode === 'ensemble' ? ' · ENSEMBLE' : ''}`;
+      if (s.mode === 'ensemble' && s.teams) {
+        $('#hud-r').innerHTML = s.teams.map(t => {
+          const c = s.clearance && s.clearance[t.id] ? s.clearance[t.id].level : '';
+          return `<span style="margin-left:8px">${t.name} ${t.players}${t.ready ? '✓' : '…'}</span>`;
+        }).join('') + (s.clearance ? ' &nbsp;' + Object.values(s.clearance).map(c => `${c.name}:<b>${c.level}</b>`).join(' ') : '');
+      } else {
+        $('#hud-r').innerHTML = s.players.map(p => `R${p.receiver}${p.ready ? '✓' : '…'}`).join(' ') +
+          ` &nbsp; A:<b>${s.clearance.A.level}</b> B:<b>${s.clearance.B.level}</b>`;
+      }
+      renderBlocks($('#app'), s.blocks, { act, hostGo });
+      armTimers(s);
+    }
+    if (s.testMode && !window._tpInit) { window._tpInit = true; initTestPanel(s.nodes || [], s); }
+  } catch (e) { /* room gone */ }
+}
+
+function initTestPanel(nodes, s) {
+  const tp = $('#testpanel'); tp.style.display = 'block';
+  const sel = $('#tNode');
+  nodes.forEach(n => { const o = document.createElement('option'); o.value = n.id; o.textContent = `${n.part} — ${n.id}`; sel.appendChild(o); });
+  const out = $('#tOut');
+  const show = (x) => { out.style.display = 'block'; out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 1).slice(0, 4000); };
+  $('#tJump').onclick = () => thost({ cmd: 'test-jump', node: sel.value }).then(poll).catch(e => show(e.message));
+  $('#tTimeout').onclick = () => thost({ cmd: 'test-timeout' }).then(poll).catch(e => show(e.message));
+  $('#tPreview').onclick = () => thost({ cmd: 'test-preview-ending', ending: $('#tEnding').value }).then(poll).catch(e => show(e.message));
+  $('#tInspect').onclick = () => thost({ cmd: 'test-inspect' }).then(show).catch(e => show(e.message));
+  $('#tReset').onclick = () => { if (confirm('Reset room?')) thost({ cmd: 'test-reset' }).then(() => { lastV = -1; poll(); }); };
+  $('#tPause').onclick = () => thost({ cmd: paused ? 'resume' : 'pause' }).then(poll).catch(e => show(e.message));
+  if (s.mode === 'ensemble' && s.teams) {
+    const tsel = document.createElement('select'); tsel.id = 'tTeam';
+    s.teams.forEach(t => { const o = document.createElement('option'); o.value = t.id; o.textContent = 'Team ' + t.name; tsel.appendChild(o); });
+    const btn = document.createElement('button'); btn.textContent = 'Impersonate team player';
+    btn.onclick = () => api(`/api/room/${code}/join`, { teamId: tsel.value, test: true })
+      .then(r => window.open(`/p/${code}?p=${r.playerId}`, '_blank'))
+      .catch(e => show(e.message));
+    $('#tImpA').replaceWith(tsel); $('#tImpB').replaceWith(btn);
+  } else {
+    const imp = (rc) =>
+      api(`/api/room/${code}/join`, { receiver: rc, test: true })
+        .then(r => window.open(`/p/${code}?p=${r.playerId}`, '_blank'))
+        .catch(e => show(e.message));
+    $('#tImpA').onclick = () => imp('A');
+    $('#tImpB').onclick = () => imp('B');
+  }
+}
+setInterval(poll, 1500);
+poll();
+</script>
+</body>
+</html>
