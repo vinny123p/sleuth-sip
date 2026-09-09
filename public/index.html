@@ -37,7 +37,16 @@
 </div>
 <script src="/app.js"></script>
 <script>
-const { api } = window.UNKNOWN;
+const api = (window.UNKNOWN && window.UNKNOWN.api) || (async (path, body) => {
+  const res = await fetch(path, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'request failed');
+  return data;
+});
 const hostRoom = async (btn, body) => {
   btn.disabled = true;
   const st = document.getElementById('hostStatus');

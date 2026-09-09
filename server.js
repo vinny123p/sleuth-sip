@@ -232,7 +232,7 @@ const server = http.createServer(async (req, res) => {
   const parts = u.pathname.split('/').filter(Boolean);
 
   // ---- static
-  if (req.method === 'GET' && (parts.length === 0 || !parts[0].startsWith('api'))) {
+  if ((req.method === 'GET' || req.method === 'HEAD') && (parts.length === 0 || !parts[0].startsWith('api'))) {
     let f = parts.join('/');
     if (f === '' ) f = 'index.html';
     if (f === 'j' || (parts[0] === 'j' && parts[1])) { f = 'join.html'; }
@@ -241,6 +241,7 @@ const server = http.createServer(async (req, res) => {
     const fp = path.join(__dirname, 'public', f);
     if (fs.existsSync(fp) && fs.statSync(fp).isFile()) {
       res.writeHead(200, { 'Content-Type': MIME[path.extname(fp)] || 'application/octet-stream' });
+      if (req.method === 'HEAD') { res.end(); return; }
       fs.createReadStream(fp).pipe(res); return;
     }
     res.writeHead(404); res.end('not found'); return;
