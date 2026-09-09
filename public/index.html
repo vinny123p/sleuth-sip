@@ -37,7 +37,7 @@
 </div>
 <script src="/app.js"></script>
 <script>
-const api = (window.UNKNOWN && window.UNKNOWN.api) || (async (path, body) => {
+const landingApi = (window.UNKNOWN && window.UNKNOWN.api) || (async (path, body) => {
   const res = await fetch(path, {
     method: body === undefined ? 'GET' : 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -51,7 +51,7 @@ const hostRoom = async (btn, body) => {
   btn.disabled = true;
   const st = document.getElementById('hostStatus');
   if (st) st.innerHTML = '<span class="spinner"></span>Starting your room — waking the server, one moment…';
-  try { const r = await api('/api/room', body); location.href = r.hostUrl; }
+  try { const r = await landingApi('/api/room', body); location.href = r.hostUrl; }
   catch (err) { btn.disabled = false; if (st) st.textContent = ''; alert(err.message); }
 };
 document.getElementById('hostBtn').onclick = (e) => hostRoom(e.target, {});
