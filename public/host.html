@@ -31,6 +31,7 @@
 </div>
 <script src="/app.js"></script>
 <script>
+(async () => {
 const { $, api, codeFromPath, qs, renderBlocks, armTimers } = window.UNKNOWN;
 const code = codeFromPath('h');
 const test = qs.get('test') === '1';
@@ -100,6 +101,7 @@ function initTestPanel(nodes, s) {
 }
 setInterval(poll, 1500);
 poll();
+})();
 </script>
 </body>
 </html>

@@ -14,6 +14,7 @@
 <div class="wrap"><div id="app"><p class="b-status">Connecting…</p></div></div>
 <script src="/app.js"></script>
 <script>
+(async () => {
 const { $, api, codeFromPath, qs, renderBlocks, armTimers, stopRing } = window.UNKNOWN;
 const code = codeFromPath('p');
 const playerId = qs.get('p') || localStorage.getItem('unknown-' + code);
@@ -59,6 +60,7 @@ async function poll() {
 }
 setInterval(poll, 1500);
 poll();
+})();
 </script>
 </body>
 </html>

@@ -470,5 +470,22 @@ await t('DUET unchanged: default mode is duet', async () => {
   check('no teams in duet', info.teams === undefined);
 });
 
+await t('CLIENT: inline scripts share scope with app.js without collisions', async () => {
+  const { readFileSync } = await import('fs');
+  const { Script } = await import('vm');
+  const { dirname, join } = await import('path');
+  const { fileURLToPath } = await import('url');
+  const pub = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
+  const appjs = readFileSync(join(pub, 'app.js'), 'utf8');
+  for (const p of ['index.html', 'host.html', 'join.html', 'phone.html', 'kit.html']) {
+    const html = readFileSync(join(pub, p), 'utf8');
+    const inlines = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+    try {
+      new Script(appjs + '\n;\n' + inlines.join('\n;\n'), { filename: p });
+      check(p + ' parses with app.js', true);
+    } catch (e) { check(p + ' parses with app.js', false, e.message); }
+  }
+});
+
 console.log(`\n${failures === 0 ? 'ALL TESTS PASSED' : failures + ' FAILURES'}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -17,9 +17,9 @@
 <div id="kit"></div>
 <script src="/app.js"></script>
 <script>
+(async () => {
 const { $, api } = window.UNKNOWN;
 const mode = new URLSearchParams(location.search).get('mode') === 'ensemble' ? 'ensemble' : 'duet';
-(async () => {
   const { pages } = await api('/api/kit?mode=' + mode);
   document.querySelector('.b-text').textContent = mode === 'ensemble'
     ? 'Eight pages: preparation, six team dossiers, and the sealed packet 000. Print this page, cut or fold into envelopes.'

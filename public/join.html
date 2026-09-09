@@ -15,10 +15,10 @@
 </div>
 <script src="/app.js"></script>
 <script>
+(async () => {
 const { $, api, codeFromPath } = window.UNKNOWN;
 const code = codeFromPath('j');
 const app = $('#app');
-(async () => {
   if (!code) { app.innerHTML = '<p>Invalid join link.</p>'; return; }
   let info;
   try { info = await api('/api/room/' + code); }
