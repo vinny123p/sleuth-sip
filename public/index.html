@@ -28,6 +28,7 @@
   </div>
   <div class="mt">
     <button class="btn" id="hostEnsBtn">Host an ensemble room — up to 24 players</button>
+    <p id="hostStatus" class="b-status center" style="min-height:1.4em"></p>
   </div>
   <p class="dim" style="margin-top:2em">A playable social mystery. Two phones and one shared screen,<br>or up to 24 players in teams trading clues toward one solve.</p>
   <div class="mt">
@@ -39,8 +40,10 @@
 const { api } = window.UNKNOWN;
 const hostRoom = async (btn, body) => {
   btn.disabled = true;
+  const st = document.getElementById('hostStatus');
+  if (st) st.textContent = 'Starting your room — waking the server, one moment…';
   try { const r = await api('/api/room', body); location.href = r.hostUrl; }
-  catch (err) { btn.disabled = false; alert(err.message); }
+  catch (err) { btn.disabled = false; if (st) st.textContent = ''; alert(err.message); }
 };
 document.getElementById('hostBtn').onclick = (e) => hostRoom(e.target, {});
 document.getElementById('hostEnsBtn').onclick = (e) => hostRoom(e.target, { mode: 'ensemble', teamCount: 6 });
