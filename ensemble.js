@@ -116,7 +116,7 @@ export const ENSEMBLE = {
           { t: 'title', text: 'Sleuth & Sip — ENSEMBLE' },
           { t: 'text', text: 'The Room That Remembers · cooperative · teams trade clues toward one solve' },
           { t: 'code', text: r.code },
-          { t: 'qr', text: r.joinUrl },
+          { t: 'qr', text: r.qrDataUrl || r.joinUrl },
           { t: 'text', text: 'Join from your phone and pick a team. Each team receives a dossier no other team sees.' },
           { t: 'teams', teams: teamsOf(r).map((t) => ({ name: t.name, color: t.color, players: t.players.length, ready: teamMembers(r, t).filter((p) => p.ready).length })) },
           ...(teams.length >= 2

@@ -22,7 +22,7 @@ export const EPISODE = {
           { t: 'title', text: 'Sleuth & Sip' },
           { t: 'text', text: 'The Room That Remembers · two receivers · one shared screen' },
           { t: 'code', text: r.code },
-          { t: 'qr', text: r.joinUrl },
+          { t: 'qr', text: r.qrDataUrl || r.joinUrl },
           { t: 'text', text: 'Each player joins from their phone. You will be assigned Receiver A or Receiver B.' },
           { t: 'status', text: ps.length === 0 ? 'Waiting for receivers…' : ps.map(p => `Receiver ${p.receiver} — ${p.name} ${p.ready ? '· ready' : '· not ready'}`).join('    ') },
           ...(ps.length === 2 && ps.every(p => p.ready)
