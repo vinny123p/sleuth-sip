@@ -277,6 +277,13 @@ await t('VERIFIED reachable without typed puzzles', async () => {
   check('B VERIFIED without typed input', st.clearance.B.score >= 7, JSON.stringify(st.clearance.B));
 });
 
+await t('room codes are 4-letter Jackbox style', async () => {
+  const code = await newRoom();
+  check('4 letters, unambiguous alphabet', /^[A-HJ-NP-Z]{4}$/.test(code), code);
+  const info = await get('/api/room/' + code.toLowerCase());
+  check('lowercase code lookup works', info.code === code, info.code);
+});
+
 // ---------------------------------------------------------- ENSEMBLE
 async function newEnsembleRoom(n = 6) { return (await api('/api/room', { mode: 'ensemble', teamCount: n })).code; }
 async function setupEnsemble(code, perTeam = 2) {
