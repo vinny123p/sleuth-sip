@@ -13,7 +13,8 @@
 <div class="hud"><span id="hud-l">Sleuth &amp; Sip · shared screen</span><span id="hud-r"></span></div>
 <div class="wrap"><div id="app"><p class="b-status">Connecting…</p></div></div>
 <div class="testpanel" id="testpanel" style="display:none;">
-  <h3>🔧 DEBUG · testing tools only (players never see this)</h3>
+  <h3>🔧 DEBUG <button id="tMin" title="Minimize panel">−</button></h3>
+  <div id="tBody">
   <div id="tPos" class="b-status" style="margin-bottom:6px;"></div>
   <select id="tNode"></select>
   <button id="tJump">Jump to scene</button>
@@ -31,6 +32,7 @@
   <button id="tImpB">Impersonate B</button>
   <button id="tReset">Reset room</button>
   <pre id="tOut" style="display:none;"></pre>
+  </div>
 </div>
 <script src="/app.js"></script>
 <script>
@@ -97,6 +99,11 @@ function initTestPanel(nodes, s) {
   const goNode = (id) => { if (id) thost({ cmd: 'test-jump', node: id }).then(poll).catch(e => show(e.message)); };
   $('#tPrev').onclick = () => { const i = tCurIdx(); if (i > 0) goNode(tNodes[i - 1].id); };
   $('#tNext').onclick = () => { const i = tCurIdx(); if (i >= 0 && i < tNodes.length - 1) goNode(tNodes[i + 1].id); };
+  $('#tMin').onclick = () => {
+    const b = $('#tBody'), hidden = b.style.display === 'none';
+    b.style.display = hidden ? 'block' : 'none';
+    $('#tMin').textContent = hidden ? '−' : '+';
+  };
   $('#tTimeout').onclick = () => thost({ cmd: 'test-timeout' }).then(poll).catch(e => show(e.message));
   $('#tPreview').onclick = () => thost({ cmd: 'test-preview-ending', ending: $('#tEnding').value }).then(poll).catch(e => show(e.message));
   $('#tInspect').onclick = () => thost({ cmd: 'test-inspect' }).then(show).catch(e => show(e.message));
